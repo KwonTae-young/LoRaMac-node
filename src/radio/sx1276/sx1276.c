@@ -1119,15 +1119,25 @@ void SX1276StartCad( void )
     }
 }
 
+#define LORA_CW
 void SX1276SetTxContinuousWave( uint32_t freq, int8_t power, uint16_t time )
 {
     uint32_t timeout = ( uint32_t )time * 1000;
 
     SX1276SetChannel( freq );
 
+#ifndef LORA_CW
     SX1276SetTxConfig( MODEM_FSK, power, 0, 0, 4800, 0, 5, false, false, 0, 0, 0, timeout );
+#else
+    SX1276SetTxConfig( MODEM_LORA, power, 0, 0, 4800, 0, 5, false, false, 0, 0, 0, timeout );
+#endif
 
+#ifndef LORA_CW
     SX1276Write( REG_PACKETCONFIG2, ( SX1276Read( REG_PACKETCONFIG2 ) & RF_PACKETCONFIG2_DATAMODE_MASK ) );
+#else
+    SX1276Write( 0x1E, 0xC8);
+#endif
+
     // Disable radio interrupts
     SX1276Write( REG_DIOMAPPING1, RF_DIOMAPPING1_DIO0_11 | RF_DIOMAPPING1_DIO1_11 );
     SX1276Write( REG_DIOMAPPING2, RF_DIOMAPPING2_DIO4_10 | RF_DIOMAPPING2_DIO5_10 );
